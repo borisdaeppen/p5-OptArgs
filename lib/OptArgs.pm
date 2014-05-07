@@ -2,15 +2,14 @@ package OptArgs;
 use strict;
 use warnings;
 use Carp qw/croak carp/;
-use Encode qw/decode decode_utf8/;
+use Encode qw/decode/;
 use Exporter::Tidy
   default => [qw/opt arg optargs usage subcmd/],
   other   => [qw/dispatch/];
 use Getopt::Long qw/GetOptionsFromArray/;
-use I18N::Langinfo qw/langinfo/;
 use List::Util qw/max/;
 
-our $VERSION = '0.1.8';
+our $VERSION = '0.1.10';
 our $COLOUR  = 0;
 our $ABBREV  = 0;
 our $SORT    = 0;
@@ -442,14 +441,12 @@ sub _optargs {
     my $package = $caller;
 
     if ( !@_ and @ARGV ) {
-        my $CODESET = eval { I18N::Langinfo::CODESET() };
+        my $CODESET =
+          eval { require I18N::Langinfo; I18N::Langinfo::CODESET() };
 
         if ($CODESET) {
-            my $codeset = langinfo($CODESET);
+            my $codeset = I18N::Langinfo::langinfo($CODESET);
             $_ = decode( $codeset, $_ ) for @ARGV;
-        }
-        else {
-            $_ = decode( 'UTF-8', $_ ) for @ARGV;
         }
 
         $source = \@ARGV;
